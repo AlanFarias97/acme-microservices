@@ -1,0 +1,15 @@
+[submodule "platform/config-server"]
+	path = platform/config-server
+	url = https://github.com/AlanFarias97/config-server.git
+[submodule "platform/eureka-server"]
+	path = platform/eureka-server
+	url = https://github.com/AlanFarias97/eureka-server.git
+[submodule "platform/api-gateway"]
+	path = platform/api-gateway
+	url = https://github.com/AlanFarias97/api-gateway.git
+[submodule "services/identity-svc"]
+	path = services/identity-svc
+	url = https://github.com/AlanFarias97/identity-svc.git
+[submodule "services/billing-svc"]
+	path = services/billing-svc
+	url = https://github.com/AlanFarias97/billing-svc.git
