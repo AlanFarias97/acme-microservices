@@ -1,6 +1,0 @@
-spring:
-  application:
-    name: hr-svc
-  # Para que tome Config Server desde env
-  config:
-    import: optional:configserver:${SPRING_CONFIG_IMPORT:}
