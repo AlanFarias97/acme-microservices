@@ -1,0 +1,59 @@
+services:
+  config-server:
+    ports: ["8888:8888"]
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8888/actuator/health | grep -q '\"status\":\"UP\"'"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 10s
+
+  eureka-server:
+    ports: ["8761:8761"]
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8761/actuator/health | grep -q '\"status\":\"UP\"'"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 15s
+    depends_on:
+      config-server:
+        condition: service_healthy
+
+  api-gateway:
+    ports: ["8080:8080"]
+    depends_on:
+      config-server: { condition: service_healthy }
+      eureka-server:  { condition: service_healthy }
+
+  identity-db:
+    ports: ["5432:5432"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U identity -d identity_local"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 10s
+
+  billing-db:
+    ports: ["5434:5432"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U billing -d billing_local"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 10s
+
+  identity-svc:
+    ports: ["8081:8080"]
+    depends_on:
+      config-server: { condition: service_healthy }
+      eureka-server:  { condition: service_healthy }
+      identity-db:    { condition: service_healthy }
+
+  billing-svc:
+    ports: ["8082:8082"]
+    depends_on:
+      config-server: { condition: service_healthy }
+      eureka-server:  { condition: service_healthy }
+      billing-db:     { condition: service_healthy }

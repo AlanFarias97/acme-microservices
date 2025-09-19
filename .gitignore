@@ -1,0 +1,46 @@
+# --- Sistema / IDE ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# --- Java / Maven ---
+target/
+**/target/
+!.mvn/wrapper/maven-wrapper.jar
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+.mvn/wrapper/maven-wrapper.properties
+
+# --- Logs / tmp ---
+*.log
+logs/
+**/logs/
+tmp/
+**/tmp/
+
+# --- Docker / Compose ---
+# No ignoramos Dockerfile ni docker-compose*.yml
+*.pid
+
+# --- Node (por si tenés front luego) ---
+node_modules/
+dist/
+build/
+
+# --- Seguridad / Entorno ---
+.env
+.env.*.local
+*.keystore
+*.jks
+*.p12
+*.pem
+*.crt
+*.key
+
+# --- Spring Boot specifics ---
+**/application-local.yml
+**/application-local.properties

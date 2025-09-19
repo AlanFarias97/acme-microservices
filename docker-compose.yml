@@ -1,0 +1,152 @@
+name: acme-microservices
+
+networks:
+  acme-net:
+
+volumes:
+  identity_pgdata:
+  billing_pgdata:
+  hr_pgdata:
+
+services:
+  # === Plataforma ===
+  config-server:
+    build:
+      context: ./platform/config-server
+    image: ghcr.io/alanfarias97/acme-config-server:local
+    environment:
+      SPRING_APPLICATION_NAME: config-server
+    networks: [acme-net]
+
+  eureka-server:
+    build:
+      context: ./platform/eureka-server
+    image: ghcr.io/alanfarias97/acme-eureka-server:local
+    environment:
+      SPRING_APPLICATION_NAME: eureka-server
+      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+      SPRING_CLOUD_CONFIG_LABEL: main
+      SPRING_CLOUD_CONFIG_FAIL_FAST: "true"
+    depends_on:
+      config-server:
+        condition: service_started
+    networks: [acme-net]
+
+  api-gateway:
+    build:
+      context: ./platform/api-gateway
+    image: ghcr.io/alanfarias97/acme-api-gateway:local
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_APPLICATION_NAME: api-gateway
+      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+      SPRING_CLOUD_CONFIG_LABEL: main
+      SPRING_CLOUD_CONFIG_FAIL_FAST: "true"
+    depends_on:
+      config-server:
+        condition: service_started
+      eureka-server:
+        condition: service_started
+    networks: [acme-net]
+
+  # === Datos ===
+  identity-db:
+    image: postgres:16
+    ports:
+      - "5431:5432" 
+    environment:
+      POSTGRES_DB: identity_local
+      POSTGRES_USER: identity
+      POSTGRES_PASSWORD: identity
+    volumes:
+      - identity_pgdata:/var/lib/postgresql/data
+    networks: [acme-net]
+
+  billing-db:
+    image: postgres:16
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_DB: billing_local
+      POSTGRES_USER: billing
+      POSTGRES_PASSWORD: billing
+    volumes:
+      - billing_pgdata:/var/lib/postgresql/data
+    networks: [acme-net]
+
+  hr-db:
+    image: postgres:16
+    ports:
+      - "5433:5432"  
+    environment:
+      POSTGRES_DB: hr_local
+      POSTGRES_USER: hr
+      POSTGRES_PASSWORD: hr
+    volumes:
+      - hr_pgdata:/var/lib/postgresql/data
+    networks: [acme-net]
+  
+
+  # === Servicios ===
+  identity-svc:
+    build:
+      context: ./services/identity-svc
+    image: ghcr.io/alanfarias97/acme-identity-svc:local
+    environment:
+      SPRING_APPLICATION_NAME: identity-svc
+      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+      SPRING_CLOUD_CONFIG_LABEL: main
+      SPRING_CLOUD_CONFIG_FAIL_FAST: "true"
+      SPRING_DATASOURCE_URL: jdbc:postgresql://identity-db:5432/identity_local
+      SPRING_DATASOURCE_USERNAME: identity
+      SPRING_DATASOURCE_PASSWORD: identity
+      # el secreto real lo puedes mover a .env (ver más abajo)
+      SECURITY_JWT_SECRET: ${JWT_SECRET}
+    depends_on:
+      config-server: { condition: service_started }
+      eureka-server:  { condition: service_started }
+      identity-db:    { condition: service_started }
+    networks: [acme-net]
+
+  billing-svc:
+    build:
+      context: ./services/billing-svc
+    image: ghcr.io/alanfarias97/acme-billing-svc:local
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_APPLICATION_NAME: billing-svc
+      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+      SPRING_CLOUD_CONFIG_LABEL: main
+      SPRING_CLOUD_CONFIG_FAIL_FAST: "true"
+      SECURITY_JWT_SECRET: ${JWT_SECRET}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://billing-db:5432/billing_local
+      SPRING_DATASOURCE_USERNAME: billing
+      SPRING_DATASOURCE_PASSWORD: billing
+    depends_on:
+      config-server: { condition: service_started }
+      eureka-server:  { condition: service_started }
+      billing-db:     { condition: service_started }
+    networks: [acme-net]
+
+  hr-svc:
+    build:
+      context: ./services/hr-svc
+    image: ghcr.io/alanfarias97/acme-hr-svc:local
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_APPLICATION_NAME: hr-svc
+      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+      SPRING_CLOUD_CONFIG_LABEL: main
+      SPRING_CLOUD_CONFIG_FAIL_FAST: "true"
+      SECURITY_JWT_SECRET: ${JWT_SECRET}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://hr-db:5432/hr_local
+      SPRING_DATASOURCE_USERNAME: hr
+      SPRING_DATASOURCE_PASSWORD: hr
+    depends_on:
+      config-server: { condition: service_started }
+      eureka-server:  { condition: service_started }
+      hr-db:          { condition: service_started }
+    networks: [acme-net]
