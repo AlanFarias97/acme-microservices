@@ -13,3 +13,7 @@
 [submodule "services/billing-svc"]
 	path = services/billing-svc
 	url = https://github.com/AlanFarias97/billing-svc.git
+[submodule "services/hr-svc"]
+	path = services/hr-svc
+	url = https://github.com/AlanFarias97/acme-hr-svc.git
+	branch = main
