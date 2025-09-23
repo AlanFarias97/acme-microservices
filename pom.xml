@@ -37,7 +37,7 @@
         <module>platform/api-gateway</module>
         <module>platform/config-server</module>
         <module>platform/eureka-server</module>
-        <module>platform/event-orchestrator</module>
+        <!-- event-orchestrator es ahora un submódulo Git independiente -->
         <module>services/identity-svc</module>
         <module>services/hr-svc</module>
         <module>services/billing-svc</module>

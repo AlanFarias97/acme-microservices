@@ -17,3 +17,6 @@
 	path = services/hr-svc
 	url = https://github.com/AlanFarias97/acme-hr-svc.git
 	branch = main
+[submodule "platform/event-orchestrator"]
+	path = platform/event-orchestrator
+	url = https://github.com/AlanFarias97/event-orchestrator.git
