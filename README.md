@@ -44,35 +44,196 @@ The Event Orchestrator Service is responsible for:
 | `identity.user.created` | 2 | 30 days | User registration |
 | `acme.dead-letter` | 1 | 30 days | Failed events |
 
-## 🚀 Quick Start
+## 🚀 Quick Start for Developers
 
 ### Prerequisites
-- Java 21+
-- Apache Kafka 3.6+
-- Maven 3.9+
 
-### Running Locally
+**Required Software:**
+- **Docker Desktop** 4.0+ (with Docker Compose)
+- **Git** 2.30+
+- **Java 21+** (optional, for local development)
+- **Maven 3.9+** (optional, for local development)
+
+**System Requirements:**
+- 8GB RAM minimum (16GB recommended)
+- 10GB free disk space
+- Windows 10/11, macOS 10.15+, or Ubuntu 20.04+
+
+### 1. Clone the Repository with Submodules
+
 ```bash
-# Build
-mvn clean package
+# Clone the main repository with all submodules
+git clone --recursive https://github.com/AlanFarias97/acme-microservices.git
 
-# Run
-java -jar target/event-orchestrator-*.jar
-
-# Or with Maven
-mvn spring-boot:run
+# Alternative: Clone and then initialize submodules
+git clone https://github.com/AlanFarias97/acme-microservices.git
+cd acme-microservices
+git submodule update --init --recursive
 ```
 
-### With Docker
-```bash
-# Build image
-docker build -t acme-event-orchestrator .
+**Important:** The `--recursive` flag is essential as the **Event Orchestrator** is a Git submodule.
 
-# Run
-docker run -p 8084:8084 \
-  -e KAFKA_BOOTSTRAP_SERVERS=kafka:29092 \
-  acme-event-orchestrator
+### 2. Environment Setup
+
+Create a `.env` file in the project root:
+
+```bash
+# Copy the example environment file
+cp .env.example .env
+
+# Or create manually with:
+cat > .env << EOF
+JWT_SECRET=your-secret-key-here-must-be-at-least-32-characters-long
+POSTGRES_PASSWORD=admin123
+EOF
 ```
+
+### 3. Start the Complete Stack
+
+**Option A: Start Everything (Recommended)**
+```bash
+# Start all services in background
+docker-compose up -d
+
+# Watch logs (optional)
+docker-compose logs -f
+```
+
+**Option B: Start Step by Step (for debugging)**
+```bash
+# 1. Start infrastructure first
+docker-compose up -d config-server eureka-server kafka zookeeper
+
+# 2. Wait for infrastructure to be ready (30-60 seconds)
+docker-compose logs config-server
+
+# 3. Start databases
+docker-compose up -d identity-db hr-db billing-db
+
+# 4. Start platform services
+docker-compose up -d api-gateway event-orchestrator
+
+# 5. Start business services
+docker-compose up -d identity-svc hr-svc billing-svc
+
+# 6. Start optional services
+docker-compose up -d kafka-ui
+```
+
+### 4. Verify the Setup
+
+**Check all services are running:**
+```bash
+# View service status
+docker-compose ps
+
+# Check if all services are healthy
+docker-compose ps --filter "status=running"
+```
+
+**Test key endpoints:**
+```bash
+# API Gateway (main entry point)
+curl http://localhost:8080/actuator/health
+
+# Event Orchestrator (submodule service)
+curl http://localhost:8084/actuator/health
+
+# HR Service (business service)
+curl http://localhost:8083/actuator/health
+```
+
+**Access Web Interfaces:**
+- **API Gateway**: http://localhost:8080
+- **Eureka Dashboard**: http://localhost:8761
+- **Kafka UI**: http://localhost:8090
+- **Event Orchestrator**: http://localhost:8084
+
+### 5. Stop the Stack
+
+```bash
+# Stop all services
+docker-compose down
+
+# Stop and remove volumes (clean reset)
+docker-compose down -v
+
+# Stop and remove images (full cleanup)
+docker-compose down -v --rmi all
+```
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+**1. Port Already in Use**
+```bash
+# Check what's using the port
+netstat -ano | findstr :8080  # Windows
+lsof -i :8080                 # macOS/Linux
+
+# Kill the process or change ports in docker-compose.yml
+```
+
+**2. Services Not Starting**
+```bash
+# Check logs for specific service
+docker-compose logs identity-svc
+
+# Check all logs
+docker-compose logs
+
+# Restart specific service
+docker-compose restart hr-svc
+```
+
+**3. Database Connection Issues**
+```bash
+# Restart databases
+docker-compose restart identity-db hr-db billing-db
+
+# Check database logs
+docker-compose logs identity-db
+```
+
+**4. Submodule Issues**
+```bash
+# Update submodules to latest
+git submodule update --remote
+
+# Reset submodules if corrupted
+git submodule deinit --all
+git submodule update --init --recursive
+```
+
+**5. Build Issues**
+```bash
+# Clean rebuild everything
+docker-compose build --no-cache
+docker-compose up -d
+```
+
+### Service Startup Order
+
+Services have dependencies and start in this order:
+1. **Infrastructure**: Config Server, Zookeeper
+2. **Platform**: Eureka Server, Kafka
+3. **Databases**: PostgreSQL instances
+4. **Gateway**: API Gateway, Event Orchestrator
+5. **Business**: Identity, HR, Billing services
+
+## 🌐 Service Endpoints
+
+| Service | Port | Health Check | Purpose |
+|---------|------|--------------|---------|
+| **API Gateway** | 8080 | `/actuator/health` | Main entry point |
+| **Eureka Server** | 8761 | `/actuator/health` | Service registry |
+| **Config Server** | 8888 | `/actuator/health` | External configuration |
+| **Event Orchestrator** | 8084 | `/actuator/health` | Kafka management |
+| **Identity Service** | Internal | Via Gateway `/identity/*` | Authentication |
+| **HR Service** | 8083 | Via Gateway `/hr/*` | Employee management |
+| **Billing Service** | 8082 | Via Gateway `/billing/*` | Invoice management |
+| **Kafka UI** | 8090 | Web Interface | Event debugging |
 
 ## ⚙️ Configuration
 
