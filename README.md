@@ -1,48 +1,101 @@
-# 🎭 Event Orchestrator Service
+# 🏢 ACME Microservices Platform
 
 [![Java](https://img.shields.io/badge/Java-21-orange.svg)](https://openjdk.org/projects/jdk/21/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.5-brightgreen.svg)](https://spring.io/projects/spring-boot)
 [![Apache Kafka](https://img.shields.io/badge/Apache%20Kafka-3.6.0-blue.svg)](https://kafka.apache.org/)
+[![Docker](https://img.shields.io/badge/Docker-Compose-blue.svg)](https://docs.docker.com/compose/)
 
-Centralized Kafka topic management and event orchestration service for ACME Microservices Platform.
+Enterprise-grade microservices platform featuring **Event-Driven Architecture**, **Service Discovery**, **API Gateway**, and **Distributed Caching**.
 
-## 🎯 Purpose
-
-The Event Orchestrator Service is responsible for:
-- **Kafka Topic Management** - Auto-creation and configuration of topics
-- **Event Schema Registry** - Centralized event contract management  
-- **Topic Monitoring** - Health checks and metrics for Kafka infrastructure
-- **Event Routing** - Advanced routing and filtering capabilities
-
-## 🏗️ Architecture
+## 🏗️ Architecture Overview
 
 ```
-┌─────────────────────────────────────────┐
-│           Event Orchestrator            │
-├─────────────────────────────────────────┤
-│  🎯 Topic Auto-Creation                 │
-│  📊 Schema Management                   │
-│  🔍 Health Monitoring                   │
-│  🔄 Event Routing                       │
-└─────────────────┬───────────────────────┘
-                  │
-          ┌───────▼───────┐
-          │ Kafka Cluster │
-          │ + Zookeeper   │
-          └───────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                    API Gateway (8080)                      │
+└─────────────────────┬───────────────────────────────────────┘
+                      │
+      ┌───────────────┼───────────────┐
+      │               │               │
+┌─────▼─────┐   ┌─────▼─────┐   ┌─────▼─────┐
+│ Identity  │   │    HR     │   │  Billing  │
+│ Service   │   │ Service   │   │ Service   │
+└─────┬─────┘   └─────┬─────┘   └─────┬─────┘
+      │               │               │
+      └───────────────┼───────────────┘
+                      │
+              ┌───────▼───────┐
+              │  Kafka Cluster │
+              │  + Zookeeper   │
+              └───────┬───────┘
+                      │
+              ┌───────▼───────┐
+              │  Redis Cluster │
+              │   (Cache)      │
+              └───────────────┘
 ```
 
-## 📋 Managed Topics
+## 🚀 Key Features
 
-| Topic | Partitions | Retention | Purpose |
-|-------|------------|-----------|---------|
-| `hr.employee.created` | 3 | 7 days | New employee events |
-| `hr.employee.updated` | 3 | 7 days | Employee changes |
-| `hr.employee.deleted` | 3 | 30 days | Employee removals |
-| `billing.invoice.created` | 3 | 1 year | New invoices |
-| `billing.invoice.paid` | 3 | 1 year | Payment events |
-| `identity.user.created` | 2 | 30 days | User registration |
-| `acme.dead-letter` | 1 | 30 days | Failed events |
+### 🎯 **Event-Driven Architecture**
+- **Apache Kafka** para messaging asíncrono
+- **Typed Event Contracts** en commons library
+- **Auto-topic creation** y management
+- **Dead Letter Queues** para error handling
+
+### 🔧 **Microservices Foundation**
+- **Service Discovery** con Eureka
+- **API Gateway** con load balancing y circuit breakers
+- **Centralized Configuration** con Config Server
+- **JWT Authentication** entre servicios
+
+### 📊 **Observability & Monitoring**
+- **Kafka UI** para debugging visual
+- **Health checks** en todos los servicios
+- **Actuator endpoints** para métricas
+- **Structured logging**
+
+### 🏭 **Enterprise Patterns**
+- **Multi-module Maven** project
+- **Git Submodules** para servicios independientes
+- **Docker Compose** para desarrollo
+- **Professional project structure**
+
+## 📂 Project Structure
+
+```
+acme-microservices/
+├── 📦 commons/                    # Shared Libraries
+│   ├── event-contracts/           # Typed event models
+│   ├── kafka-client/             # Kafka abstractions
+│   ├── cache-client/             # Redis utilities
+│   └── common-security/          # JWT shared logic
+├── 🏛️ platform/                   # Infrastructure Services
+│   ├── api-gateway/              # Spring Cloud Gateway
+│   ├── config-server/            # External configuration
+│   ├── eureka-server/            # Service discovery
+│   └── event-orchestrator/       # Kafka management (Git Submodule)
+├── 🎯 services/                   # Business Services
+│   ├── identity-svc/             # Authentication & users
+│   ├── hr-svc/                   # Human resources
+│   └── billing-svc/              # Invoice management
+├── docker-compose.yml            # Complete infrastructure
+└── pom.xml                       # Parent POM
+```
+
+## 🛠️ Technology Stack
+
+| Component | Technology | Purpose |
+|-----------|------------|---------|
+| **Language** | Java 21 | Latest LTS with performance improvements |
+| **Framework** | Spring Boot 3.4.5 | Microservices foundation |
+| **Service Discovery** | Eureka | Service registry and discovery |
+| **API Gateway** | Spring Cloud Gateway | Routing, load balancing, security |
+| **Messaging** | Apache Kafka 3.6.0 | Event streaming platform |
+| **Cache** | Redis | Distributed caching |
+| **Database** | PostgreSQL 16 | Relational data storage |
+| **Security** | JWT + Spring Security | Authentication & authorization |
+| **Configuration** | Spring Cloud Config | Externalized configuration |
+| **Containerization** | Docker + Docker Compose | Development environment |
 
 ## 🚀 Quick Start for Developers
 
@@ -244,79 +297,117 @@ SPRING_CLOUD_CONFIG_URI=http://config-server:8888
 EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka
 ```
 
-### Topic Configuration
-Topics are auto-created with these default settings:
-- **Partitions**: 3 (for parallelism)
-- **Replication Factor**: 1 (development)
-- **Compression**: Snappy
-- **Retention**: Varies by topic type
+## 🔗 Git Submodules
 
-## 🔍 Monitoring
+This project demonstrates **enterprise microservices practices** using Git submodules for independent service development.
 
-### Health Checks
+### Event Orchestrator (Submodule)
+The `platform/event-orchestrator` is managed as a separate repository:
+- **Repository**: [event-orchestrator](https://github.com/AlanFarias97/event-orchestrator)
+- **Purpose**: Independent development, versioning, and deployment of Kafka management
+- **Build**: Self-contained with multi-stage Dockerfile
+
+### Working with Submodules
+
+**Daily Development:**
 ```bash
-# Service health
-curl http://localhost:8084/actuator/health
+# Update all submodules to latest
+git submodule update --remote
 
-# Kafka connectivity
-curl http://localhost:8084/actuator/kafka
+# Update specific submodule
+git submodule update --remote platform/event-orchestrator
+
+# Check submodule status
+git submodule status
 ```
 
-### Metrics
-The service exposes metrics for:
-- Topic creation status
-- Kafka connectivity
-- Message throughput
-- Error rates
+**Working on Submodule:**
+```bash
+# Navigate to submodule
+cd platform/event-orchestrator
 
-## 🛠️ Development
+# Work normally (it's a separate Git repo)
+git checkout -b feature/new-feature
+git commit -m "Add new feature"
+git push origin feature/new-feature
 
-### Adding New Topics
-```java
-@Bean
-public NewTopic myNewTopic() {
-    return TopicBuilder.name("my.new.topic")
-            .partitions(3)
-            .replicas(1)
-            .config("retention.ms", "604800000")
-            .build();
-}
+# Return to main project and update reference
+cd ../..
+git add platform/event-orchestrator
+git commit -m "Update event-orchestrator to latest version"
 ```
 
-### Testing
+### Why Submodules?
+
+✅ **Independent Development**: Teams can work on services separately  
+✅ **Independent Versioning**: Each service has its own release cycle  
+✅ **Independent CI/CD**: Separate build and deployment pipelines  
+✅ **Code Ownership**: Clear boundaries between team responsibilities  
+✅ **Enterprise Practice**: Standard approach in large organizations
+
+## 🧪 Testing
+
+### Unit Tests
 ```bash
-# Unit tests
+# Test all modules
 mvn test
 
-# Integration tests
+# Test specific service
+cd services/hr-svc
+mvn test
+```
+
+### Integration Tests
+```bash
+# Run integration tests
 mvn verify
 ```
 
-## 🐳 Docker
-
-### Build
+### Manual Testing
 ```bash
-docker build -t acme-event-orchestrator .
+# Get JWT token
+curl -X POST http://localhost:8080/identity/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"demo","password":"demo"}'
+
+# Use token for authenticated calls
+curl -H "Authorization: Bearer <TOKEN>" \
+  http://localhost:8080/hr/employees
 ```
 
-### Run
-```bash
-docker run -p 8084:8084 acme-event-orchestrator
-```
+## 🔧 Development
 
-## 🔗 Integration
+### Adding New Events
+1. Define event in `commons/event-contracts`
+2. Add topic in `event-orchestrator/KafkaTopicConfiguration`
+3. Implement producer in source service
+4. Implement consumer in target service
 
-This service integrates with:
-- **Kafka Cluster** - Topic management
-- **Eureka Server** - Service discovery
-- **Config Server** - External configuration
-- **All Microservices** - Event coordination
+### Adding New Service
+1. Create module in `services/`
+2. Add dependency on commons modules
+3. Configure Eureka client
+4. Add routes in API Gateway
+5. Update docker-compose.yml
 
-## 📚 Related
+## 🌟 Roadmap
 
-- [ACME Microservices Platform](../README.md)
-- [Event Contracts](../commons/event-contracts/README.md)
-- [Kafka Client](../commons/kafka-client/README.md)
+- [ ] **Cache Implementation** - Redis multi-level caching
+- [ ] **Distributed Tracing** - Sleuth + Zipkin
+- [ ] **Metrics & Monitoring** - Prometheus + Grafana  
+- [ ] **Event Sourcing** - Complete audit trail
+- [ ] **SAGA Pattern** - Distributed transactions
+- [ ] **API Documentation** - OpenAPI/Swagger
+- [ ] **CI/CD Pipeline** - GitHub Actions
+- [ ] **Kubernetes Deployment** - Helm charts
+
+## 📚 Documentation
+
+- [Event Contracts Guide](commons/event-contracts/README.md)
+- [Service Communication](docs/communication.md)
+- [Security Setup](docs/security.md)
+- [Kafka Configuration](docs/kafka.md)
+- [Docker Deployment](docs/deployment.md)
 
 ## 👨‍💻 Author
 
